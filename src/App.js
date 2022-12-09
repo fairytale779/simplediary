@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
+// import OptimizeTest from './OptimizeTest'
 // import Lifecycle from './lifecycle'
 
 // const dummyList = [
@@ -50,10 +51,11 @@ function App() {
 
   const dataId = useRef(0)
 
+  // api 호출
   const getData = async () => { 
     const res = await fetch('https://jsonplaceholder.typicode.com/comments').then((res) => res.json());
 
-    const initData = res.slice(0,20).map((it)=>{
+    const initData = res.slice(0,20).map((it)=>{ 
       return  {
         author : it.email,
         content : it.body,
@@ -67,7 +69,7 @@ function App() {
   }
 
   useEffect (()=>{
-    getData()
+    getData() 
   },[])
 
   const onCreate = (author, content, emotion) => {
@@ -84,8 +86,7 @@ function App() {
 
   }
 
-  const onRemove = (targetId) => {
-    console.log(`${targetId}가 삭제되었습니다.`)
+  const onRemove = (targetId) => { 
     const newDiaryList = data.filter((it) => it.id !== targetId)
     setData(newDiaryList)
   }
@@ -102,10 +103,27 @@ function App() {
     )
   }
 
+  // 계속 변하지 않는 값이므로 메모이제이션 사용
+  // 유즈메모를 사용하게되면 함수가 아니라 값이다 그러므로 getDiaryAnalysis() 가 아니고 getDiaryAnalysis
+  const getDiaryAnalysis = useMemo(
+    () => {
+      const goodCount = data.filter((it) => it.emotion >= 3).length
+      const badCount = data.length - goodCount
+      const goodRatio = (goodCount / data.length) * 100;
+      return {goodCount, badCount, goodRatio} 
+  }, [data.length]) // data.length가 변화할 때만 콜백함수가 바뀜. 그러니까 바뀌지 않으면 계속 같은 값 리턴한다.)
+
+    const {goodCount, badCount, goodRatio} = getDiaryAnalysis
+
   return (
     <div className="App">
+      {/* <OptimizeTest/> */}
       {/* <Lifecycle /> */}
       <DiaryEditor onCreate={onCreate}/>
+      <div>전체 일기 : {data.length}</div>
+      <div>기분 좋은 일기 개수 : {goodCount}</div>
+      <div>기분 나쁜 일기 개수 : {badCount}</div>
+      <div>기분 좋은 일기 비율 : {goodRatio}</div>
       <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data}/>
     </div>
   );
