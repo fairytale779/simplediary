@@ -7,6 +7,7 @@ const DiaryItem = ({onRemove, onEdit, author, content, created_date, emotion, id
     const toggleIsEdit = () => setIsEdit(!isEdit)
     const localContentInput = useRef()
 
+
     const handleRemove = () => {
         if(window.confirm(`${id}번째 일기를 정말 삭제하시겠습니까?`)){
             onRemove(id)
